@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday! 🎂✨</title>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ffeef8 0%, #f0e6ff 50%, #e3f2fd 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --primary: #ff6b81;
+            --accent: #ff85a2;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Floating Background Emojis */
+        .bg-animations span {
+            position: absolute;
+            bottom: -50px;
+            font-size: 2.2rem;
+            animation: floatUp 7s infinite linear;
+            opacity: 0.6;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+        }
+
+        .bg-animations span:nth-child(1) { left: 12%; animation-duration: 6s; }
+        .bg-animations span:nth-child(2) { left: 28%; animation-duration: 8s; animation-delay: 1.5s; }
+        .bg-animations span:nth-child(3) { left: 52%; animation-duration: 7s; animation-delay: 0.5s; }
+        .bg-animations span:nth-child(4) { left: 78%; animation-duration: 9s; animation-delay: 2.5s; }
+        .bg-animations span:nth-child(5) { left: 92%; animation-duration: 6.5s; animation-delay: 3.5s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Shared Glassmorphism Card Style */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 36px 30px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(255, 107, 129, 0.12);
+            text-align: center;
+            max-width: 460px;
+            width: 90%;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Step 1: OTP Lock Screen */
+        #otp-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .otp-icon {
+            font-size: 3.2rem;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .message-text {
+            margin-bottom: 12px;
+        }
+
+        .sign-off {
+            margin-top: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .otp-box {
+            width: 52px;
+            height: 58px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .otp-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(255, 107, 129, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Step 2: Question Screen */
+        #question-screen {
+            position: fixed;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 90;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 15px 0 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            min-height: 60px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 129, 0.35);
+            width: 100%;
+        }
+
+        #yes-btn {
+            width: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+            z-index: 10;
+        }
+
+        #no-btn {
+            width: auto;
+            background: #b2bec3;
+            box-shadow: none;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 20;
+        }
+
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 16px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Step 3: Message Screen */
+        #message-screen {
+            position: fixed;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 80;
+        }
+
+        .cake-emoji {
+            font-size: 4.5rem;
+            display: inline-block;
+            animation: pulse 1.6s infinite ease-in-out;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15) rotate(4deg); }
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.1rem;
+            margin-bottom: 15px;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Auto-Adjust Responsive Mobile Layout */
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 24px 18px;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            h2 {
+                font-size: 1.35rem;
+            }
+
+            p, .message-text {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .cake-emoji {
+                font-size: 3.5rem;
+            }
+
+            .otp-container {
+                gap: 8px;
+            }
+
+            .otp-box {
+                width: 44px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .music-btn {
+                top: 12px;
+                right: 12px;
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a80509.mp3?filename=happy-birthday-15340.mp3"></audio>
+    <button class="music-btn" onclick="toggleMusic()">🎵 Music: OFF</button>
+
+    <div class="bg-animations">
+        <span>🎈</span>
+        <span>✨</span>
+        <span>💖</span>
+        <span>🎉</span>
+        <span>🥳</span>
+    </div>
+
+    <!-- Step 1: OTP Lock Screen -->
+    <div id="otp-screen">
+        <div id="otp-card" class="glass-card">
+            <div class="otp-icon">📲</div>
+            <h2>Security Check</h2>
+            <p>Enter the 4-digit passcode to unlock your birthday surprise!</p>
+
+            <div id="otp-container" class="otp-container">
+                <input type="text" class="otp-box" maxlength="1" inputmode="numeric" autofocus>
+                <input type="text" class="otp-box" maxlength="1" inputmode="numeric">
+                <input type="text" class="otp-box" maxlength="1" inputmode="numeric">
+                <input type="text" class="otp-box" maxlength="1" inputmode="numeric">
+            </div>
+
+            <button class="btn" onclick="verifyOTP()">Unlock ✨</button>
+            <br>
+            <button class="resend-btn" onclick="getHint()">Need a hint? 💡</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Question Prompt Screen -->
+    <div id="question-screen">
+        <div class="glass-card">
+            <div class="cake-emoji">🎁</div>
+            <p class="question-text">Are you ready to see your surprise?</p>
+
+            <div class="btn-group">
+                <button id="yes-btn" class="btn" onclick="revealMessage()">YES! 🎉</button>
+                <button id="no-btn" class="btn" onclick="dodgeNo()">NO 😜</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Main Birthday Message Screen -->
+    <div id="message-screen">
+        <div class="glass-card">
+            <div class="cake-emoji">🎂</div>
+            <h1>Happy Birthday! 🥳</h1>
+            
+            <p class="message-text">
+                Happy Birthday! 💖 Just wanted to remind you today how much I appreciate your kind and gentle heart. I know things have been really heavy and overwhelming for you lately, but please don't forget to take a step back and be kind to yourself, too. You give so much warmth to the people around you, even when you're fighting your own quiet battles.
+            </p>
+            
+            <p class="message-text">
+                You don't have to carry everything all at once, and you definitely don't have to go through it alone. I’m always right here whenever you need someone to talk to, a random distraction, or just quiet company.
+            </p>
+
+            <p class="sign-off">– Always here for you ✨</p>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_OTP = "0927";
+
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        const otpCard = document.getElementById('otp-card');
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const bgm = document.getElementById('bgm');
+        
+        let yesScale = 1.0;
+        let musicPlaying = false;
+
+        // Auto-tab & Auto-submit for OTP inputs
+        otpBoxes.forEach((box, index) => {
+            box.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpBoxes.length - 1) {
+                    otpBoxes[index + 1].focus();
+                }
+                if (getEnteredOTP().length === 4) {
+                    setTimeout(verifyOTP, 150);
+                }
+            });
+
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && index > 0) {
+                    otpBoxes[index - 1].focus();
+                }
+            });
+        });
+
+        function getEnteredOTP() {
+            let entered = "";
+            otpBoxes.forEach(box => entered += box.value);
+            return entered;
+        }
+
+        // Validate OTP -> Transition to Question Screen
+        function verifyOTP() {
+            if (getEnteredOTP() === CORRECT_OTP) {
+                document.getElementById('otp-screen').style.display = 'none';
+                document.getElementById('question-screen').style.display = 'flex';
+            } else {
+                otpCard.classList.add('shake');
+                setTimeout(() => {
+                    otpCard.classList.remove('shake');
+                    otpBoxes.forEach(box => box.value = "");
+                    otpBoxes[0].focus();
+                }, 400);
+            }
+        }
+
+        function getHint() {
+            alert(`💡 Hint: The passcode is a special day!`);
+        }
+
+        // Dodge logic for NO button & enlarge logic for YES button
+        function dodgeNo() {
+            const randomX = (Math.random() - 0.5) * 260; 
+            const randomY = (Math.random() - 0.5) * 260; 
+            noBtn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            yesScale += 0.18;
+            yesBtn.style.transform = `scale(${yesScale})`;
+        }
+
+        ['mouseenter', 'mouseover', 'touchstart', 'pointerenter'].forEach(eventType => {
+            noBtn.addEventListener(eventType, (e) => {
+                e.preventDefault();
+                dodgeNo();
+            });
+        });
+
+        // Click YES -> Reveal Birthday Message + Trigger Confetti
+        function revealMessage() {
+            document.getElementById('question-screen').style.display = 'none';
+            document.getElementById('message-screen').style.display = 'flex';
+            triggerConfetti();
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 140,
+                spread: 85,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function toggleMusic() {
+            const btn = document.querySelector('.music-btn');
+            if (musicPlaying) {
+                bgm.pause();
+                btn.textContent = "🎵 Music: OFF";
+            } else {
+                bgm.play().catch(() => {});
+                btn.textContent = "🎵 Music: ON";
+            }
+            musicPlaying = !musicPlaying;
+        }
+    </script>
+</body>
+</html>
